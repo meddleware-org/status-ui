@@ -14,7 +14,7 @@
 **Deployed by:** `k8s/base/apps/status` via the overlay `k8s/clusters/meddleware-org/apps` (digest from `config/images.yaml`)
 **Build args:** `VITE_API_BASE` (public, empty) and `CSP` (the response-header policy) — none secret
 **Deployment status:** image `quay.io/meddleware-org/status-ui` (+ Docker Hub; best-effort digest-preserving copy to the self-hosted registry, currently without credentials) serving `status.meddleware.co.uk` at 0.1.20 (`sha256:8ec62b1b…f115`; release tag `v0.1.20` = `fe94a6f`; released, signature verified and deployed 2026-10-18, rollout succeeded; 0.1.19 was deployed 2026-10-09; live headers and `/api/status` re-checked 2026-10-18; the snapshot lists Identity & Access, Container Registry and Chain Access → Chain index, all operational)
-**Review date:** 2026-09-19 (first pass) · re-verified 2026-10-03 · re-verified 2026-10-09 · fix wave 2026-10-18 (0.1.20, released and deployed 2026-10-18) · image build 2026-10-20 (0.1.21)
+**Review date:** 2026-09-19 (first pass) · re-verified 2026-10-03 · re-verified 2026-10-09 · fix wave 2026-10-18 (0.1.20, released and deployed 2026-10-18) · image build 2026-10-20 (0.1.21); 0.1.25 re-verified 2026-10-30 (Dependency updates (minor and patch groups) and workflow action bumps)
 **Reviewer:** Internal review
 **Severity ceiling:** Low — no backend, accounts, secrets or writes; the worst case is misleading status text from a compromised probe.
 **Status:** fix wave 2026-10-18 (0.1.20, released and deployed 2026-10-18, signature verified, rollout succeeded) — 21 findings (8 Positive): 10 RESOLVED, 1 ADJUDICATED, 2 DEFERRED (both maintainer-only)
