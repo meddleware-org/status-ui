@@ -12,9 +12,11 @@ the snapshot it receives.
    Render exactly what `/api/status` returns. The snapshot fields are `operational`, `degraded`,
    `down`, and `unknown` — map them to colour/label, nothing more.
 
-2. **No caching of `/api/status` in the frontend.** The page polls on a timer via
-   `useStatus`; there is no service worker, no localStorage persistence, and no stale-while-
-   revalidate. The snapshot is always live from the prober.
+2. **No caching of `/api/status` in the frontend.** The page polls on a timer via `useStatusSnapshot`
+   (`@meddleware/ui`: every 15 s while the tab is visible); there is no service worker and no persistence, so a reload
+   always starts from the prober. The one thing held is the last snapshot in memory: when a poll fails the page keeps
+   showing it, with its own "Updated" time and a warning that the latest check failed (rather than a blank error page),
+   and a response that is not a valid snapshot is an error, never "operational".
 
 3. **`VITE_API_BASE` defaults to empty string (same-origin).** In production, nginx routes
    `/api/` to platform-probe on the same hostname — no CORS, no cross-origin complexity. Only

@@ -29,3 +29,8 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+test-results/
+
+# Lighthouse CI
+.lighthouseci/

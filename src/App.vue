@@ -1,130 +1,47 @@
 <script setup lang="ts">
-import { AppHeader, AppFooter, UiNotice, ColorModeControl, useColorMode } from '@meddleware/ui'
-import { useStatus } from './composables/useStatus'
+import { AppFooter, AppHeader, ColorModeControl, CopyrightLine, UiAppShell, UiLiveStatus, UiNotice, useColorMode, useStatusSnapshot } from '@meddleware/ui'
+import { API_BASE } from './config'
 import StatusBanner from './components/StatusBanner.vue'
 import StatusGroup from './components/StatusGroup.vue'
 
-const { snapshot, error, loading } = useStatus()
-const { mode, set } = useColorMode()
+// The probe checks every 15 s; the composable polls while the tab is visible and keeps the last good snapshot across a failed poll.
+const { snapshot, error, loading } = useStatusSnapshot({ url: `${API_BASE}/api/status`, intervalMs: 15_000 })
+const { mode, set } = useColorMode('dark')
 </script>
 
 <template>
-  <div class="layout">
-    <AppHeader variant="dark">
-      <template #brand>
-        <span class="brand">meddleware</span>
-      </template>
-      <!-- AppHeader has no "center" slot: default-slot content follows the brand. -->
-      <h1 class="page-title">Service Status</h1>
-      <template #actions>
-        <ColorModeControl :model-value="mode" @update:model-value="set" />
-      </template>
-    </AppHeader>
-
-    <main class="main">
-      <div class="container">
-        <template v-if="loading">
-          <div class="skeleton-banner" />
-          <div class="skeleton-group" />
-          <div class="skeleton-group" />
+  <UiAppShell contained>
+    <template #header>
+      <AppHeader variant="dark">
+        <template #brand>meddleware</template>
+        <template #actions>
+          <ColorModeControl :model-value="mode" @update:model-value="set" />
         </template>
+      </AppHeader>
+    </template>
 
-        <template v-else-if="error">
-          <UiNotice type="error">
-            Could not load status: {{ error }}
-          </UiNotice>
-        </template>
+    <h1>Service Status</h1>
+    <UiLiveStatus label="Status page" :message="loading ? 'Loading the current status…' : ''" />
+    <UiNotice v-if="error && !snapshot" type="error" :message="`Could not load status: ${error}`" />
+    <!-- A failed poll keeps the last snapshot on screen, and says it may be out of date, instead of replacing the page. -->
+    <UiNotice v-else-if="error" type="warning" :message="`The latest check failed (${error}). This is the last status received, and it may be out of date.`" />
+    <template v-if="snapshot">
+      <StatusBanner :overall="snapshot.overall" :generated-at="snapshot.generated_at" />
+      <StatusGroup v-for="group in snapshot.groups" :key="group.name" :group="group" />
+    </template>
 
-        <template v-else-if="snapshot">
-          <StatusBanner :overall="snapshot.overall" :generated-at="snapshot.generated_at" />
-          <div class="groups">
-            <StatusGroup v-for="group in snapshot.groups" :key="group.name" :group="group" />
-          </div>
-        </template>
-      </div>
-    </main>
-
-    <AppFooter>
-      <p class="footer-note">Checks run server-side every 15 s. Results are cached — this page never probes internal services directly.</p>
-    </AppFooter>
-  </div>
+    <template #footer>
+      <AppFooter>
+        <p class="note">Checks run server-side every 15 s. Results are cached — this page never probes internal services directly.</p>
+        <CopyrightLine symbol-variant="kopimi" organisation-name="Meddleware" rights-statement="jam" />
+      </AppFooter>
+    </template>
+  </UiAppShell>
 </template>
 
 <style scoped>
-.layout {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--mw-font-sans);
-}
-
-.brand {
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--mw-panel-dark-text);
-}
-
-.page-title {
-  flex: 1;
+.note {
   margin: 0;
-  font-size: 0.9375rem;
-  font-weight: 400;
-  color: var(--mw-panel-dark-muted);
-}
-
-.main {
-  flex: 1;
-  padding: 2rem 1rem;
-}
-
-.container {
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.groups {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-/* Loading skeletons */
-.skeleton-banner,
-.skeleton-group {
-  border-radius: var(--mw-radius);
-  background: var(--lift);
-  animation: pulse 1.4s ease-in-out infinite;
-}
-
-.skeleton-banner {
-  height: 64px;
-  margin-bottom: 2rem;
-}
-
-.skeleton-group {
-  height: 120px;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.footer-note {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--muted);
-}
-</style>
-
-<style>
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
+  font-size: var(--font-size-sm);
 }
 </style>

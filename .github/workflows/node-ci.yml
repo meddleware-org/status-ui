@@ -64,6 +64,17 @@ jobs:
       - name: No inline script outside the CSP
         run: npm run check:csp
 
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Browser tests (five browsers, WCAG 2.2 AA and AAA, reflow, keyboard)
+        run: npm run test:e2e
+        env:
+          E2E_BROWSERS: all
+
+      - name: Lighthouse (accessibility 100, best practices, bundle budgets)
+        run: npx lhci autorun
+
   scan:
     name: Filesystem scan (Trivy)
     runs-on: ubuntu-latest

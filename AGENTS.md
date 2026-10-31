@@ -13,14 +13,13 @@ src/
   main.ts                  App entry — imports design-token CSS, mounts Vue app
   App.vue                  Root layout: AppHeader (dark) + main + AppFooter; polling state machine
   config.ts                VITE_API_BASE env var (empty = same-origin)
-  types.ts                 StatusLevel, StatusComponent, StatusGroup, StatusSnapshot types
-  composables/
-    useStatus.ts           Polls /api/status every 15 s; returns { snapshot, error, loading }
   components/
-    StatusDot.vue          Small coloured circle; status prop → CSS var colour
-    StatusBanner.vue       Hero row: overall status dot + human label + generated_at timestamp
-    StatusGroup.vue        Card listing a capability group's component statuses
+    StatusBanner.vue       The overall status: a dot (UiStatusDot), the headline in a live region, the generated_at <time>
+    StatusGroup.vue        A UiCard (h2) with a UiStatGrid of a group's components: name → dot + label
 ```
+
+The polling (`useStatusSnapshot`), the dot, the labels (`STATUS_LABEL`, `STATUS_HEADLINE`), the snapshot types and the parser come from
+`@meddleware/ui` / `@meddleware/web-utils`; this repo holds no copy of them.
 
 ## Environment variables
 
@@ -35,6 +34,7 @@ npm install
 npm run dev          # Vite dev server at http://localhost:5173 (proxies /api → :8080)
 npm run type-check   # vue-tsc type check only (no emit)
 npm run build        # type-check + Vite production build → dist/
+npm run lhci         # Lighthouse CI (accessibility 100); E2E_BROWSERS=all npm run test:e2e for five browsers
 npm run check:csp    # after a build: fail on an inline <script> the Dockerfile CSP does not allow
 bash scripts/smoke.sh <image>   # probe a built image (CONTAINER_ENGINE=podman for rootless podman)
 ```
