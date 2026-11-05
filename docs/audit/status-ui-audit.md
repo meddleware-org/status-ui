@@ -356,7 +356,7 @@ Scope: the changes since the last substantive entry (2026-10-24, which logged th
 ### F23 — Positive: the shared sweep covers every screen and passes on five browsers with the CI font
 **Severity:** Positive
 **Where:** e2e/a11y.spec.ts (`defineA11ySuite`, AAA `gate`)
-**Evidence:** four states — operational, an outage with an unknown component, the probe failing and the request never answering — each at AA and AAA (gating) in all ten theme × season looks, at 320 px, 200% text, in forced colours, under reduced motion and by keyboard, on five browser projects: 315 tests passed with the CI font. The responses are served by the specs over HTTP (real formats, not stubs).
+**Evidence:** four states — operational, an outage with an unknown component, the probe failing and the request never answering — each at AA and AAA (gating) in all ten theme × season looks, at 320 px, 200% text, in forced colours, under reduced motion and by keyboard, on five browser projects: 315 tests passed with the CI font. The responses are served by the specs through `page.route`; their shape (`generated_at`, `overall`, groups with `name`, `status` and components) equals the live `https://status.meddleware.co.uk/api/status`, compared on 2026-11-05.
 
 ### Delta notes (A11Y lens, `AUDIT_TEMPLATE_A11Y.md`)
 - **Support promise:** the shared browserslist (`@meddleware/frontend-config/browserslist-config`); build target through `viteTarget()`; compat lints on.
