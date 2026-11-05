@@ -3,7 +3,7 @@
 **Classification:** Internal security review
 **Project:** `repos/status-ui` — Vue 3 SPA showing platform health from `platform-probe`'s `/api/status` (`status.meddleware.co.uk`)
 **Project type:** Vue app (display only)
-**Template:** AUDIT_TEMPLATE.md (2026-10-08) + AUDIT_TEMPLATE_TS.md (2026-10-08) + AUDIT_TEMPLATE_VUE.md (2026-10-08) + AUDIT_TEMPLATE_IMG.md (2026-10-08). Not triggered: `AUDIT_TEMPLATE_SUI_CLIENT.md` (no chain code; the chain index it reports on is read by `platform-probe`, not by this page), `AUDIT_TEMPLATE_AUTH.md` / `AUDIT_TEMPLATE_PROXY.md` (the page holds no credential and forwards nothing; the ingress path rule is platform configuration), `AUDIT_TEMPLATE_PLATFORM.md` (the SOPS-encrypted checks Secret that feeds the status snapshot is mounted by `platform-probe`, not by this image; it is recorded in B.2 for completeness and belongs to the platform audit).
+**Template:** AUDIT_TEMPLATE.md (2026-11-01) + AUDIT_TEMPLATE_TS.md (2026-11-01) + AUDIT_TEMPLATE_VUE.md (2026-11-01) + AUDIT_TEMPLATE_IMG.md (2026-10-08) + AUDIT_TEMPLATE_A11Y.md (2026-11-01). Not triggered: `AUDIT_TEMPLATE_SUI_CLIENT.md` (no chain code; the chain index it reports on is read by `platform-probe`, not by this page), `AUDIT_TEMPLATE_AUTH.md` / `AUDIT_TEMPLATE_PROXY.md` (the page holds no credential and forwards nothing; the ingress path rule is platform configuration), `AUDIT_TEMPLATE_PLATFORM.md` (the SOPS-encrypted checks Secret that feeds the status snapshot is mounted by `platform-probe`, not by this image; it is recorded in B.2 for completeness and belongs to the platform audit).
 **Package manager / lockfile:** npm 11, committed (361 locked packages; 26 production)   **Module format:** ESM (`type: module`)   **Publish model:** image only (`private: true`)
 **Runtime targets:** browser   **Peer dependencies:** none
 **Build tool:** vite 8.3.3, @vitejs/plugin-vue 6.0.9, vue 3.5.43, vitest 5.0.3 (jsdom 30)   **Hosting:** container image (static-server 0.1.8) behind Cloudflare; no static host   **Embedding hosts:** none
@@ -14,7 +14,7 @@
 **Deployed by:** `k8s/base/apps/status` via the overlay `k8s/clusters/meddleware-org/apps` (digest from `config/images.yaml`)
 **Build args:** `VITE_API_BASE` (public, empty) and `CSP` (the response-header policy) — none secret
 **Deployment status:** image `quay.io/meddleware-org/status-ui` (+ Docker Hub; best-effort digest-preserving copy to the self-hosted registry, currently without credentials) serving `status.meddleware.co.uk` at 0.1.20 (`sha256:8ec62b1b…f115`; release tag `v0.1.20` = `fe94a6f`; released, signature verified and deployed 2026-10-18, rollout succeeded; 0.1.19 was deployed 2026-10-09; live headers and `/api/status` re-checked 2026-10-18; the snapshot lists Identity & Access, Container Registry and Chain Access → Chain index, all operational)
-**Review date:** 2026-09-19 (first pass) · re-verified 2026-10-03 · re-verified 2026-10-09 · fix wave 2026-10-18 (0.1.20, released and deployed 2026-10-18) · image build 2026-10-20 (0.1.21); 0.1.25 re-verified 2026-10-30 (Dependency updates (minor and patch groups) and workflow action bumps); 0.1.26 re-verified 2026-10-31 (Shared shell, status dots from ui and accessibility gates)
+**Review date:** 2026-09-19 (first pass) · re-verified 2026-10-03 · re-verified 2026-10-09 · fix wave 2026-10-18 (0.1.20, released and deployed 2026-10-18) · image build 2026-10-20 (0.1.21); 0.1.25 released 2026-10-30 (Dependency updates (minor and patch groups) and workflow action bumps); 0.1.26 released 2026-10-31 (Shared shell, status dots from ui and accessibility gates); frontend-wave delta review 2026-11-01 (real review of the 2026-10-19 → 2026-11-01 changes; see the delta section)
 **Reviewer:** Internal review
 **Severity ceiling:** Low — no backend, accounts, secrets or writes; the worst case is misleading status text from a compromised probe.
 **Status:** fix wave 2026-10-18 (0.1.20, released and deployed 2026-10-18, signature verified, rollout succeeded) — 21 findings (8 Positive): 10 RESOLVED, 1 ADJUDICATED, 2 DEFERRED (both maintainer-only)
@@ -69,6 +69,8 @@ The 2026-10-18 fix wave (0.1.20, released and deployed 2026-10-18) closed the th
   the verdict the probe computes, not the snapshot shape: the page parses the same four levels (F19).
 
 No High or Critical; the severity ceiling is unchanged.
+
+**2026-11-01 update.** The status page was rebuilt on the shared shell and the shared status composable. This review found nothing to fix in the app: the page still renders only what the probe reports, a failed poll never reads as healthy (F22), and the four states pass the shared sweep on five browsers (F23). It picks up the new default body cap and the field-edge, header and hint fixes through ui 0.1.38 and web-utils 0.0.2.
 
 ## Threat model / trust boundaries
 
@@ -342,6 +344,26 @@ stage against the `CSP` build argument, so the release image cannot be built wit
 fails, Dockerfile CSP read). The compensating control stays: `script-src 'self'` plus the nonce, no
 `'unsafe-inline'` (live header 2026-10-10).
 
+### Frontend wave delta review (2026-11-01) — 0.1.25 to 0.1.26 reviewed · 0.1.27 prepared
+
+Scope: the changes since the last substantive entry (2026-10-24, which logged the rename and `robots.txt`/`llms.txt`): `App.vue` rebuilt on `UiAppShell` and `useStatusSnapshot` (its own `useStatus` composable and `StatusDot` deleted: both now come from `@meddleware/ui`), `StatusBanner` and `StatusGroup` slimmed to the shared components, the Dockerfile's CSP check, the five-browser sweep and Lighthouse CI. The package is private (the image is the artefact). The release tool's "re-verified" marks for these releases recorded no review; this section is the review. Read: `App.vue`, `StatusBanner.vue`, `StatusGroup.vue`, `config.ts`, `main.ts`, the Dockerfile and its CSP, `scripts/smoke.sh`, the workflows, and ui's `useStatusSnapshot` and `parseSnapshot` (what the page now delegates to). Ran (with the locally packed `ui` 0.1.38, `design-tokens` 0.1.13, `web-utils` 0.0.2, `frontend-config` 0.0.2): the audit gate (0 not allowlisted; the two `extract-zip` advisories are allowlisted until 2027-01-31), `vue-tsc`, lint (stylelint, eslint, html-validate), `vitest` (2 files, 14 tests), the production build and `check:csp` (no inline script in the built page: the image serves `script-src 'self'`), `npm pack --dry-run` (not applicable: the package is private and ships as an image), and the browser suite on Chromium, Firefox, WebKit, a Pixel 7 and an iPhone 14 with the CI font (DejaVu Sans through fontconfig): **315 passed in 5.1 minutes**.
+
+### F22 — Positive: the page renders exactly what the probe reports, and a failed poll never reads as healthy
+**Severity:** Positive
+**Where:** `src/App.vue`, `@meddleware/ui` `useStatusSnapshot`
+**Evidence:** `useStatusSnapshot` (ui 0.1.38; web-utils 0.0.2) polls `GET /api/status` on the same origin (`connect-src 'self'`), every 15 s while the tab is visible, with a 10 s timeout and a 1 MiB body cap, and accepts only a body `parseSnapshot` validates (unknown statuses become `unknown`, names lose HTML-sensitive characters); an invalid body is an error, never "operational". A failed poll keeps the last good snapshot and says on screen that it may be out of date; with no snapshot yet it shows the error. The sweep covers all four: operational, outage and unknown components, the probe failing (HTTP 503) and the request hanging (loading).
+
+### F23 — Positive: the shared sweep covers every screen and passes on five browsers with the CI font
+**Severity:** Positive
+**Where:** e2e/a11y.spec.ts (`defineA11ySuite`, AAA `gate`)
+**Evidence:** four states — operational, an outage with an unknown component, the probe failing and the request never answering — each at AA and AAA (gating) in all ten theme × season looks, at 320 px, 200% text, in forced colours, under reduced motion and by keyboard, on five browser projects: 315 tests passed with the CI font. The responses are served by the specs over HTTP (real formats, not stubs).
+
+### Delta notes (A11Y lens, `AUDIT_TEMPLATE_A11Y.md`)
+- **Support promise:** the shared browserslist (`@meddleware/frontend-config/browserslist-config`); build target through `viteTarget()`; compat lints on.
+- **Accessibility gates:** the shared sweep over four states (axe AA and AAA `gate`; 320 px reflow; 200% text; forced colours; reduced motion; keyboard incl. focus not obscured), Lighthouse CI on the production build, `check:csp` for the image's policy, five browser projects in CI.
+- **Known exceptions:** none disabled; the 44 px enhanced target size, link purpose, reading order and screen-reader announcements are reviewed from screenshots (`npm run shots`), not automated.
+- **Supply chain:** `.github/audit-gate.mjs` with two dated `extract-zip` allowlist entries (dev-only, via `@lhci/cli`, expiry 2027-01-31, D104; OPERATOR_TASKS.md) and the `basic-ftp`/`tmp`/`zod` overrides; Dependabot (npm, Actions, Docker); `@meddleware/frontend-config` is a dev dependency (its audit F5).
+
 ## Section A — Invariant verification matrix
 
 | # | Invariant | Enforced at | Proven by | Status |
@@ -584,3 +606,4 @@ linters and html-validate are quality gates, not security evidence.
   - Stale text fixed: the F20 summary line, the F20 finding, the B.2 IMG row, the supply-chain note and the Section D mirror box now say the mirror is a digest copy since 2026-10-19 and that only credentials remain (maintainer); F20 stays DEFERRED and the box stays unticked. Counts unchanged (10 RESOLVED, 1 ADJUDICATED, 2 DEFERRED, 8 Positive, as last counted).
 - 2026-10-24 — repository renamed from `status-page` to `status-ui` (workspace naming convention, `docs/architecture/ADR-0003-naming.md`): package, image, host and path names updated throughout. No finding, disposition or evidence changed.
 - 2026-10-24 — ships its own `robots.txt` (Content Signals `search=yes, ai-input=yes`) and `llms.txt` instead of static-server defaults (workspace ADR-0005). No finding changed.
+- 2026-11-01 — frontend-wave delta review of 0.1.25 to 0.1.26. Read the app, the two components, the build configuration, the Dockerfile and CSP, the workflows, and the shared status composable it now uses; ran the gates and the five-browser suite with the CI font (315 passed in 5.1 minutes). Nothing to fix in the app's own code: the status path now runs through the shared composable (which web-utils 0.0.2 gave a default 1 MiB body cap); F22–F23 recorded as Positive. The release tool's bare "re-verified" marks were reworded to "released". `**Template:**` dates reconciled to the 2026-11-01 registry (TS/VUE changes add rows; the VUE colour row moved to A11Y, applied in full here) with no disposition change.
