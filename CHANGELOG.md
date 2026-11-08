@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.29] - 2026-11-08
 
+_Also takes `@meddleware/web-utils` 0.0.4, so a group named "Identity & Access" is no longer shown as "Identity  Access"._
+
 ### Changed
 
 - Wording for visitors: the header reads "Meddleware"; the footer explains in plain words that the platform checks its own services regularly, that the page refreshes itself about every 15 seconds and what "Unknown" means (no more "server-side", "cached" or "probes"); a failed refresh says what the page will do (try again) and no longer prints the technical cause on the page (it goes to the console).

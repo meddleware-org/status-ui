@@ -23,7 +23,7 @@
   "dependencies": {
     "@meddleware/design-tokens": "^0.1.13",
     "@meddleware/ui": "^0.1.40",
-    "@meddleware/web-utils": "^0.0.3",
+    "@meddleware/web-utils": "^0.0.4",
     "vue": "^3.5.44"
   },
   "devDependencies": {
