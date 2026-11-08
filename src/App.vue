@@ -1,11 +1,17 @@
 <script setup lang="ts">
+import { watch } from 'vue'
 import { AppFooter, AppHeader, ColorModeControl, CopyrightLine, UiAppShell, UiLiveStatus, UiNotice, useColorMode, useStatusSnapshot } from '@meddleware/ui'
 import { API_BASE } from './config'
 import StatusBanner from './components/StatusBanner.vue'
 import StatusGroup from './components/StatusGroup.vue'
 
-// The probe checks every 15 s; the composable polls while the tab is visible and keeps the last good snapshot across a failed poll.
-const { snapshot, error, loading } = useStatusSnapshot({ url: `${API_BASE}/api/status`, intervalMs: 15_000 })
+// The composable polls while the tab is visible (never faster than every 15 s) and keeps the last good snapshot across a failed poll.
+const POLL_SECONDS = 15
+const { snapshot, error, loading } = useStatusSnapshot({ url: `${API_BASE}/api/status`, intervalMs: POLL_SECONDS * 1000 })
+// A visitor cannot act on the technical cause of a failed poll (an HTTP status, a malformed body): the page says what it will do, and the cause goes to the console.
+watch(error, (cause) => {
+  if (cause) console.warn(`status-ui: the status request failed (${cause})`)
+})
 const { mode, set } = useColorMode('dark')
 </script>
 
@@ -13,7 +19,7 @@ const { mode, set } = useColorMode('dark')
   <UiAppShell contained>
     <template #header>
       <AppHeader variant="dark">
-        <template #brand>meddleware</template>
+        <template #brand>Meddleware</template>
         <template #actions>
           <ColorModeControl :model-value="mode" @update:model-value="set" />
         </template>
@@ -22,9 +28,9 @@ const { mode, set } = useColorMode('dark')
 
     <h1>Service Status</h1>
     <UiLiveStatus label="Status page" :message="loading ? 'Loading the current status…' : ''" />
-    <UiNotice v-if="error && !snapshot" type="error" :message="`Could not load status: ${error}`" />
+    <UiNotice v-if="error && !snapshot" type="error" message="Could not load the current status. This page will try again automatically." />
     <!-- A failed poll keeps the last snapshot on screen, and says it may be out of date, instead of replacing the page. -->
-    <UiNotice v-else-if="error" type="warning" :message="`The latest check failed (${error}). This is the last status received, and it may be out of date.`" />
+    <UiNotice v-else-if="error" type="warning" message="The status could not be refreshed just now. What is shown is the last status received and may be out of date. This page will try again automatically." />
     <template v-if="snapshot">
       <StatusBanner :overall="snapshot.overall" :generated-at="snapshot.generated_at" />
       <StatusGroup v-for="group in snapshot.groups" :key="group.name" :group="group" />
@@ -32,7 +38,7 @@ const { mode, set } = useColorMode('dark')
 
     <template #footer>
       <AppFooter>
-        <p class="note">Checks run server-side every 15 s. Results are cached — this page never probes internal services directly.</p>
+        <p class="note">The platform checks its own services regularly. This page shows the latest result and refreshes itself about every {{ POLL_SECONDS }} seconds. “Unknown” means no result is available yet for that service.</p>
         <CopyrightLine symbol-variant="kopimi" organisation-name="Meddleware" rights-statement="jam" />
       </AppFooter>
     </template>

@@ -6,13 +6,13 @@ endpoint every 15 s and renders the result as a capability-grouped status board.
 never probes any service directly — all health evaluation is server-side in platform-probe.
 
 - **Runtime base:** `quay.io/meddleware-org/static-server` (zero OS footprint, nginx-based)
-- **Stack:** Vue 3 + Vite + `@meddleware/design-tokens` + `@meddleware/ui`
+- **Stack:** Vue 3 + Vite + `@meddleware/design-tokens` + `@meddleware/ui`; shared build and CI tooling from `@meddleware/frontend-config`
 - **License:** BSD Zero Clause ([0BSD](LICENSE))
 
 ## Dev
 
 ```bash
-npm install
+npm ci
 npm run dev     # http://localhost:5173 — proxies /api → http://localhost:8080
 ```
 
@@ -28,7 +28,7 @@ CHECKS_CONFIG_FILE=config.example.json go run ./cmd/server
 ```bash
 npm run type-check   # vue-tsc type check only
 npm run build        # type-check + Vite production build → dist/
-npm run check:csp    # after a build: fail if dist/ has an inline <script> the Dockerfile CSP does not allow
+npm run check:csp    # after a build: fail if dist/ has an inline <script> the Dockerfile CSP does not allow (mw-check-csp-inline)
 ```
 
 CI also builds the image and probes the running container (`scripts/smoke.sh <image>`; set

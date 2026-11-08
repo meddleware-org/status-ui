@@ -7,7 +7,7 @@ defineA11ySuite(
   {
     operational: async (page) => void (await open(page, OPERATIONAL)),
     'outage and unknown': async (page) => void (await open(page, DEGRADED)),
-    'probe failing': async (page) => void (await open(page, 503)),
+    'status service failing': async (page) => void (await open(page, 503)),
     loading: async (page) => void (await open(page, 'hang')),
   },
   { aaa: 'gate' },

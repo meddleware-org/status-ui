@@ -5,6 +5,15 @@ All notable changes to status-page are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.29] - 2026-11-08
+
+### Changed
+
+- Wording for visitors: the header reads "Meddleware"; the footer explains in plain words that the platform checks its own services regularly, that the page refreshes itself about every 15 seconds and what "Unknown" means (no more "server-side", "cached" or "probes"); a failed refresh says what the page will do (try again) and no longer prints the technical cause on the page (it goes to the console).
+- Internal: shared build tooling from `@meddleware/frontend-config` 0.0.7 (`mw-audit-gate`, `mw-third-party-licenses`, `mw-check-csp-inline`, `mw-sync`; the local copies and their test are removed), `meddlewareApp`, `vueTestConfig` and the shared tsconfig base; `tsconfig.build.json` removed (the build is `vue-tsc --noEmit && vite build`); `mw-sync --check` in CI.
+- Takes `@meddleware/ui` ^0.1.40 and `@meddleware/web-utils` ^0.0.3.
+- Tests: a page-level test of the visitor's wording and of failed refreshes; the end-to-end smoke tests check the brand, the lists, the time and the error text. `AGENTS.md` is a pointer to `CLAUDE.md`.
+
 ## [0.1.28] - 2026-11-06
 
 ### Changed

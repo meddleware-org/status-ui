@@ -2,7 +2,7 @@
 # Content-Security-Policy served by static-server. The status page is same-origin only: it loads
 # its own bundle and polls GET /api/status on its own host, so connect-src is 'self'. If VITE_API_BASE
 # points at another origin, pass a CSP build arg that adds it to connect-src. style-src keeps
-# 'unsafe-inline' for the inline <style> Vite/Vue emit; there are no inline scripts (scripts/check-csp-inline.mjs
+# 'unsafe-inline' for the inline <style> Vite/Vue emit; there are no inline scripts (mw-check-csp-inline
 # fails the build if one appears).
 ARG CSP="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; upgrade-insecure-requests"
 
@@ -27,7 +27,7 @@ ENV VITE_API_BASE=${VITE_API_BASE}
 RUN npm run build && npm run licenses
 ARG CSP
 # The CSP has no 'unsafe-inline' for scripts: the build fails if dist/ ever carries an inline <script>.
-RUN node scripts/check-csp-inline.mjs "${CSP}" dist
+RUN npx mw-check-csp-inline "${CSP}" dist
 
 # ── Runtime stage ──────────────────────────────────────────────────────────────
 FROM quay.io/meddleware-org/static-server:0.1.12@sha256:f2cdfac6c795ee8a442e144e9c2d9eabbbe6566c41fdc696fe3befe2aa8d052d

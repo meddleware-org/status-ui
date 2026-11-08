@@ -1,13 +1,12 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { themeInit, viteTarget } from '@meddleware/frontend-config/vite'
+import { meddlewareApp } from '@meddleware/frontend-config/vite'
 
-export default defineConfig({
-  build: { target: viteTarget() },
-  plugins: [vue(), themeInit({ default: 'dark' })],
-  server: {
-    proxy: {
-      '/api': { target: 'http://localhost:8080', changeOrigin: true },
-    },
-  },
-})
+// The status page has no wallet. Dark is the brand default (a saved choice wins). In dev, /api is proxied to a local platform-probe.
+export default defineConfig(
+  meddlewareApp({
+    plugins: [vue()],
+    wallet: false,
+    config: { server: { proxy: { '/api': { target: 'http://localhost:8080', changeOrigin: true } } } },
+  }),
+)

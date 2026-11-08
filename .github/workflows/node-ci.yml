@@ -30,7 +30,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Audit dependencies (npm advisory DB; complements Trivy)
-        run: node .github/audit-gate.mjs
+        run: npx mw-audit-gate
+
+      - name: Shared files are current
+        run: npx mw-sync --check
       - name: Type check
         run: npm run type-check
       - name: Lint CSS (stylelint)
