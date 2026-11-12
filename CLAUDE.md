@@ -35,7 +35,7 @@ the snapshot it receives.
 ```text
 src/
   main.ts                  App entry: imports the design-token CSS, starts the season, mounts the app
-  App.vue                  Root layout: UiAppShell with AppHeader (dark, the company mark and "Meddleware"), the page heading, the polling state and AppFooter
+  App.vue                  Root layout: AppToolShell (dark header with the company mark and "Meddleware", the footer with its note), the page heading and the polling state
   config.ts                VITE_API_BASE (empty = same-origin)
   components/
     StatusBanner.vue       The overall status: a dot (UiStatusDot), the headline in a live region, the generated_at <time>
@@ -45,12 +45,11 @@ src/
 The polling (`useStatusSnapshot`), the dot, the labels (`STATUS_LABEL`, `STATUS_HEADLINE`), the snapshot types and the parser
 (`parseSnapshot`) come from `@meddleware/ui` / `@meddleware/web-utils`; this repo holds no copy of them.
 
-`App.vue` keeps its own shell rather than `AppToolShell`. The component can now leave out its documentation links
-(`:docs-url="false" :dev-url="false"`) and its hidden heading (`:page-heading="false"`), but it gives the footer no slot for
-the page's own explanatory note ("The platform checks its own services regularly …"): its footer holds only the copyright line
-and the links, and moving the note into the page body would change the wording's place and the footer's contents. So the shell
-stays `UiAppShell` + `AppHeader` + `AppFooter`, with `<BrandMark />` before the brand text "Meddleware" in the header. If
-`AppToolShell` gains a footer slot, switch to it.
+`App.vue` uses the shared `AppToolShell` (`@meddleware/ui` >= 0.1.43), with `title="Meddleware"` (the brand text, after the shell's
+default `BrandMark`), `:docs-url="false" :dev-url="false"` (the status page has no tool pages on the docs or developer sites) and
+`:page-heading="false"` (the page has its own visible `h1`, "Service Status"). `contained` keeps its default (true), the same width as
+before. The page's explanatory note ("The platform checks its own services regularly …") goes in the shell's `footer-note` slot, which
+renders after the copyright line. Do not rebuild a hand-written shell around `UiAppShell`.
 
 ## Build and run
 

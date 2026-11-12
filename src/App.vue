@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { watch } from 'vue'
-import { AppFooter, AppHeader, BrandMark, ColorModeControl, CopyrightLine, UiAppShell, UiLiveStatus, UiNotice, useColorMode, useStatusSnapshot } from '@meddleware/ui'
+import { AppToolShell, UiLiveStatus, UiNotice, useStatusSnapshot } from '@meddleware/ui'
 import { API_BASE } from './config'
 import StatusBanner from './components/StatusBanner.vue'
 import StatusGroup from './components/StatusGroup.vue'
@@ -12,20 +12,11 @@ const { snapshot, error, loading } = useStatusSnapshot({ url: `${API_BASE}/api/s
 watch(error, (cause) => {
   if (cause) console.warn(`status-ui: the status request failed (${cause})`)
 })
-const { mode, set } = useColorMode('dark')
 </script>
 
 <template>
-  <UiAppShell contained>
-    <template #header>
-      <AppHeader variant="dark">
-        <template #brand><BrandMark /> Meddleware</template>
-        <template #actions>
-          <ColorModeControl :model-value="mode" @update:model-value="set" />
-        </template>
-      </AppHeader>
-    </template>
-
+  <!-- The page has its own visible h1 and no tool pages on the docs or developer sites, so the shell adds neither a hidden heading nor those links. -->
+  <AppToolShell title="Meddleware" slug="status" :docs-url="false" :dev-url="false" :page-heading="false">
     <h1>Service Status</h1>
     <UiLiveStatus label="Status page" :message="loading ? 'Loading the current status…' : ''" />
     <UiNotice v-if="error && !snapshot" type="error" message="Could not load the current status. This page will try again automatically." />
@@ -36,13 +27,10 @@ const { mode, set } = useColorMode('dark')
       <StatusGroup v-for="group in snapshot.groups" :key="group.name" :group="group" />
     </template>
 
-    <template #footer>
-      <AppFooter>
-        <p class="note">The platform checks its own services regularly. This page shows the latest result and refreshes itself about every {{ POLL_SECONDS }} seconds. “Unknown” means no result is available yet for that service.</p>
-        <CopyrightLine symbol-variant="kopimi" organisation-name="Meddleware" rights-statement="jam" />
-      </AppFooter>
+    <template #footer-note>
+      <p class="note">The platform checks its own services regularly. This page shows the latest result and refreshes itself about every {{ POLL_SECONDS }} seconds. “Unknown” means no result is available yet for that service.</p>
     </template>
-  </UiAppShell>
+  </AppToolShell>
 </template>
 
 <style scoped>

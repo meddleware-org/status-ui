@@ -5,6 +5,13 @@ All notable changes to status-page are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.31] - 2026-11-12
+
+### Changed
+
+- The page uses the shared tool shell (`AppToolShell`, `@meddleware/ui` ^0.1.43) instead of a hand-written header and footer: its explanatory note ("The platform checks its own services regularly …") sits in the shell's `footer-note` slot, after the copyright line, and the shell's documentation and developer links and hidden heading are left out. The header (the mark and "Meddleware"), the page width, the wording and the copyright line are unchanged.
+- Internal: a test of the shell (one visible heading, the note after the copyright line, no documentation links).
+
 ## [0.1.30] - 2026-11-12
 
 ### Changed

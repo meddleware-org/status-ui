@@ -71,6 +71,22 @@ describe('the page', () => {
   })
 })
 
+describe('the shell', () => {
+  it('is the shared tool shell: one visible heading, the note after the copyright line, and no links to tool pages that do not exist', async () => {
+    respond.mockReturnValue(json(SNAPSHOT))
+    const w = await open()
+    expect(w.findAll('h1')).toHaveLength(1)
+    expect(w.get('h1').classes()).not.toContain('mw-visually-hidden')
+    const footer = w.get('footer')
+    expect(footer.find('.note').exists()).toBe(true)
+    const text = footer.text()
+    expect(text.indexOf('Meddleware')).toBeGreaterThanOrEqual(0)
+    expect(text.indexOf('Meddleware')).toBeLessThan(text.indexOf('The platform checks its own services'))
+    expect(footer.find('a[href*="docs.meddleware"], a[href*="meddleware.dev"]').exists()).toBe(false)
+    expect(w.findAll('header svg.mw-brand-mark')).toHaveLength(1)
+  })
+})
+
 describe('a failed poll', () => {
   it('with nothing to show is an error that says what happens next, without the technical cause', async () => {
     respond.mockReturnValue(new Response('down', { status: 503 }))
