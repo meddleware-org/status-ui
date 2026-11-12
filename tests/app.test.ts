@@ -53,6 +53,15 @@ describe('the page', () => {
     expect(w.text()).not.toMatch(/MeddleWare|meddleware\b(?!\.)/)
   })
 
+  it('shows the company mark beside the name in the header, as a decorative image', async () => {
+    respond.mockReturnValue(json(SNAPSHOT))
+    const w = await open()
+    const mark = w.get('header svg.mw-brand-mark')
+    expect(mark.attributes('aria-hidden')).toBe('true')
+    expect(w.findAll('header svg.mw-brand-mark')).toHaveLength(1)
+    expect(w.get('header').text()).toContain('Meddleware')
+  })
+
   it('explains the footer in plain words, with no internal jargon, build variable or script name', async () => {
     respond.mockReturnValue(json(SNAPSHOT))
     const text = (await open()).get('footer').text()

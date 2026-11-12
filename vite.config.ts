@@ -6,6 +6,7 @@ import { meddlewareApp } from '@meddleware/frontend-config/vite'
 export default defineConfig(
   meddlewareApp({
     plugins: [vue()],
+    name: 'Service Status',
     wallet: false,
     config: { server: { proxy: { '/api': { target: 'http://localhost:8080', changeOrigin: true } } } },
   }),

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { watch } from 'vue'
-import { AppFooter, AppHeader, ColorModeControl, CopyrightLine, UiAppShell, UiLiveStatus, UiNotice, useColorMode, useStatusSnapshot } from '@meddleware/ui'
+import { AppFooter, AppHeader, BrandMark, ColorModeControl, CopyrightLine, UiAppShell, UiLiveStatus, UiNotice, useColorMode, useStatusSnapshot } from '@meddleware/ui'
 import { API_BASE } from './config'
 import StatusBanner from './components/StatusBanner.vue'
 import StatusGroup from './components/StatusGroup.vue'
@@ -19,7 +19,7 @@ const { mode, set } = useColorMode('dark')
   <UiAppShell contained>
     <template #header>
       <AppHeader variant="dark">
-        <template #brand>Meddleware</template>
+        <template #brand><BrandMark /> Meddleware</template>
         <template #actions>
           <ColorModeControl :model-value="mode" @update:model-value="set" />
         </template>

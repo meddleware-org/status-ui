@@ -35,7 +35,7 @@ the snapshot it receives.
 ```text
 src/
   main.ts                  App entry: imports the design-token CSS, starts the season, mounts the app
-  App.vue                  Root layout: UiAppShell with AppHeader (dark), the page heading, the polling state and AppFooter
+  App.vue                  Root layout: UiAppShell with AppHeader (dark, the company mark and "Meddleware"), the page heading, the polling state and AppFooter
   config.ts                VITE_API_BASE (empty = same-origin)
   components/
     StatusBanner.vue       The overall status: a dot (UiStatusDot), the headline in a live region, the generated_at <time>
@@ -45,8 +45,12 @@ src/
 The polling (`useStatusSnapshot`), the dot, the labels (`STATUS_LABEL`, `STATUS_HEADLINE`), the snapshot types and the parser
 (`parseSnapshot`) come from `@meddleware/ui` / `@meddleware/web-utils`; this repo holds no copy of them.
 
-`App.vue` keeps its own shell rather than `AppToolShell`: that component is the frame of a wallet tool (a hidden page heading,
-documentation links to a tool page that does not exist for the status page), and this page has a visible `h1`.
+`App.vue` keeps its own shell rather than `AppToolShell`. The component can now leave out its documentation links
+(`:docs-url="false" :dev-url="false"`) and its hidden heading (`:page-heading="false"`), but it gives the footer no slot for
+the page's own explanatory note ("The platform checks its own services regularly …"): its footer holds only the copyright line
+and the links, and moving the note into the page body would change the wording's place and the footer's contents. So the shell
+stays `UiAppShell` + `AppHeader` + `AppFooter`, with `<BrandMark />` before the brand text "Meddleware" in the header. If
+`AppToolShell` gains a footer slot, switch to it.
 
 ## Build and run
 
@@ -68,6 +72,12 @@ bash scripts/smoke.sh <image>   # probe a built image (CONTAINER_ENGINE=podman f
 The shared tooling (`mw-audit-gate`, `mw-third-party-licenses`, `mw-check-csp-inline`, `mw-sync`, the Vite, Vitest and TypeScript
 bases) comes from `@meddleware/frontend-config`; `package.json` `"meddleware"` declares the CSP profile (`static-strict`).
 `scripts/smoke.sh` is the app's own container probe.
+
+`meddlewareApp({ name: 'Service Status' })` also emits the brand icon set (favicon, apple-touch-icon, 192/512 icons,
+`site.webmanifest`) and injects the links, so the app keeps no `public/favicon.*` and no icon `<link>` (`mw-sync --check` fails on
+the former). `tests/dist.test.ts` runs after a build (CI sets `REQUIRE_DIST=1`; a plain `npm test` before any build skips it): the
+icon set once per page, no font file or font host, no third-party load, and no origin named beyond this site, namespaces and
+library strings. No third-party fonts, scripts, styles, images or analytics, ever; the only call is `GET /api/status`.
 
 ## Wording
 

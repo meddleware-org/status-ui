@@ -10,6 +10,10 @@ test('mounts without an uncaught error', async ({ page }) => {
   await expect(page.getByRole('contentinfo')).toBeVisible()
   await expect(page.getByRole('heading', { level: 2 })).toHaveText(['Web apps', 'Chain access'])
   await expect(page.getByRole('banner')).toContainText('Meddleware')
+  // The company mark sits beside the name, drawn inside the header and not shrunk to nothing (it once collapsed in WebKit).
+  const mark = page.getByRole('banner').locator('svg.mw-brand-mark')
+  await expect(mark).toBeVisible()
+  expect((await mark.boundingBox())?.width).toBeGreaterThan(8)
   // One list of components per group, and the time of the snapshot as a machine-readable <time>.
   await expect(page.getByRole('main').locator('dl')).toHaveCount(2)
   await expect(page.getByRole('main').locator('time')).toHaveAttribute('datetime', '2026-10-08T12:00:00Z')

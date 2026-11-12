@@ -5,6 +5,14 @@ All notable changes to status-page are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.30] - 2026-11-12
+
+### Changed
+
+- The header shows the Meddleware mark beside "Meddleware" (`@meddleware/ui` ^0.1.42), and the browser tab, home-screen and web-manifest icons are the shared brand icon set. The app keeps no icon of its own: `public/favicon.svg` and the `<link rel="icon">` in `index.html` are removed, and `meddlewareApp` (`@meddleware/frontend-config` ^0.0.8, `name: 'Service Status'`) emits `favicon.svg`, `favicon.ico`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png` and `site.webmanifest` and injects the links. The footer wording and the copyright line are unchanged.
+- No third-party fonts, scripts, styles, images or analytics: the page's only call is the same-origin status request. CI workflows set `DO_NOT_TRACK=1`.
+- Internal: new tests: the mark in the header (unit and end-to-end), and, over the built `dist/` (run in CI after the build with `REQUIRE_DIST=1`), the icon set once per page, no font file or font host, no third-party load and no origin beyond this site.
+
 ## [0.1.29] - 2026-11-08
 
 _Also takes `@meddleware/web-utils` 0.0.4, so a group named "Identity & Access" is no longer shown as "Identity  Access"._
