@@ -98,3 +98,7 @@ checks configuration, so the page and its tests make no claim about which exist.
 - Do not persist the snapshot (localStorage, IndexedDB, service worker cache).
 - Do not expose `VITE_API_BASE` or any runtime config in the rendered HTML.
 - Do not add npm dependencies beyond the existing stack without a clear reason.
+
+## Interoperability
+
+- [docs/INTEROP.md](docs/INTEROP.md): the standards this project speaks, what is planned, where to extend it, and what proves each claim.
