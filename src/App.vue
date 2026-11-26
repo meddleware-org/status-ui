@@ -22,7 +22,6 @@ watch(error, (cause) => {
 </script>
 
 <template>
-  <!-- The page has its own visible h1 and no tool pages on the docs or developer sites, so the shell adds neither a hidden heading nor those links. -->
   <AppToolShell title="Meddleware" slug="status" :docs-url="false" :dev-url="false" :page-heading="false">
     <h1>Service Status</h1>
     <UiLiveStatus label="Status page" :message="loading ? 'Loading the current status…' : ''" />

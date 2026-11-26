@@ -12,7 +12,6 @@ defineProps<{
 </script>
 
 <template>
-  <!-- One card per group; the group name is its level-2 heading (the page's one h1 is above). -->
   <UiCard class="group" :level="2" :title="group.name">
     <!-- A definition list: the component name is the term and its status the definition. -->
     <UiStatGrid>
