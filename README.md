@@ -11,6 +11,8 @@ never probes any service directly — all health evaluation is server-side in pl
 
 ## Dev
 
+How to run the checks and propose a change: [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ```bash
 npm ci
 npm run dev     # http://localhost:5173 — proxies /api → http://localhost:8080

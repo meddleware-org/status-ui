@@ -1,19 +1,23 @@
 // Opens the built app with `/api/status` mocked (page.route), so a run needs no network: every request that leaves localhost is
 // refused. Returns what the page reported.
+// Page.route mocks the status endpoint, so the browser never needs the network.
 import type { Page } from '@playwright/test'
 import { offline } from '@meddleware/frontend-config/look'
 
+// group(name, components): a status group whose own status is the worst of its components (down, then degraded, else operational), as the status service computes it.
 const group = (name: string, components: [string, string][]) => ({
   name,
   status: components.some(([, s]) => s === 'down') ? 'down' : components.some(([, s]) => s === 'degraded') ? 'degraded' : 'operational',
   components: components.map(([n, status]) => ({ name: n, status })),
 })
 
+/** A snapshot in which everything is operational. */
 export const OPERATIONAL = {
   generated_at: '2026-10-08T12:00:00Z',
   overall: 'operational',
   groups: [group('Web apps', [['Dashboard', 'operational'], ['Walrus storage', 'operational']]), group('Chain access', [['Sui indexer', 'operational'], ['Seal key servers', 'operational']])],
 }
+/** A snapshot with one degraded, one down and one unknown component (a service with no result yet). */
 export const DEGRADED = {
   generated_at: '2026-10-08T12:00:00Z',
   overall: 'degraded',
@@ -23,13 +27,17 @@ export const DEGRADED = {
 /** `body` is the snapshot, an HTTP status for a failing probe, or `'hang'` for a request that never answers (the loading state). */
 export async function open(page: Page, body: unknown = OPERATIONAL) {
   const errors: string[] = []
+  // Collect uncaught page errors; the tests assert there are none.
   page.on('pageerror', (e) => errors.push(e.message))
+  // Refuse every request that leaves localhost.
   await offline(page)
+  // Answer the status request as the test asked: never (the loading state), a failing HTTP status, or the JSON snapshot.
   await page.route('**/api/status', (route) => {
     if (body === 'hang') return new Promise(() => undefined)
     if (typeof body === 'number') return route.fulfill({ status: body, body: 'down' })
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) })
   })
+  // Wait for the page's own landmarks, so a test starts from a rendered page (a heading, or the error alert).
   await page.goto('/')
   await page.getByRole('heading', { level: 1 }).waitFor()
   if (body !== 'hang') await page.getByRole('heading', { level: 2 }).first().or(page.getByRole('alert')).first().waitFor()

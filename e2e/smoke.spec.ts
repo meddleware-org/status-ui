@@ -2,6 +2,7 @@
 import { expect, test } from '@playwright/test'
 import { open } from './open.js'
 
+// Structure: the header, main and footer landmarks, the group headings and the machine-readable time.
 test('mounts without an uncaught error', async ({ page }) => {
   const { errors } = await open(page)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Service Status')
@@ -11,6 +12,7 @@ test('mounts without an uncaught error', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 2 })).toHaveText(['Web apps', 'Chain access'])
   await expect(page.getByRole('banner')).toContainText('Meddleware')
   // The company mark sits beside the name, drawn inside the header and not shrunk to nothing (it once collapsed in WebKit).
+  // The brand mark must be drawn and not collapsed to zero width.
   const mark = page.getByRole('banner').locator('svg.mw-brand-mark')
   await expect(mark).toBeVisible()
   expect((await mark.boundingBox())?.width).toBeGreaterThan(8)
@@ -21,6 +23,7 @@ test('mounts without an uncaught error', async ({ page }) => {
   expect(errors).toEqual([])
 })
 
+// State is said in words as well as colour: "Down", "Degraded" and "Unknown" are text, not only dots.
 test('says each state in words, and an outage as well as a colour', async ({ page }) => {
   await open(page, (await import('./open.js')).DEGRADED)
   await expect(page.getByLabel('Overall status')).toContainText('Partial outage')
@@ -29,6 +32,7 @@ test('says each state in words, and an outage as well as a colour', async ({ pag
   await expect(page.getByText('Unknown', { exact: true })).toBeVisible()
 })
 
+// A failed request shows an error that says what happens next, never the HTTP status and never a false "operational".
 test('a failing status service is an error that says what happens next, never "operational"', async ({ page }) => {
   await open(page, 503)
   await expect(page.getByRole('alert')).toHaveText('Could not load the current status. This page will try again automatically.')

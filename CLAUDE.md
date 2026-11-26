@@ -92,6 +92,13 @@ checks configuration, so the page and its tests make no claim about which exist.
 3. Export nothing from the component beyond the Vue default — this is a private application,
    not a library.
 
+## Documentation rules (workspace documentation standard, D144)
+
+Every file has a header and every declaration a doc comment (TSDoc in TypeScript; props and emits of a component are documented too). Comments say why.
+In a Vue single-file component the header is a `//` comment just inside `<script>` (never an HTML comment before the root element in `<template>`), template notes are
+`<!-- -->` inside the root, and style notes are `/* */`. Comments in `<script>` and `<style>` are stripped from the build; comments in `index.html` ship, so keep that file's to one line.
+`node scripts/check-docs.mjs --report status-ui` (in the workspace repository) is the gate. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## What not to do
 
 - Do not add client-side health checks, fetch calls to internal services, or ping-style probes.

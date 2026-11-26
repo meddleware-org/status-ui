@@ -18,6 +18,7 @@ set -euo pipefail
 
 image="${1:?usage: smoke.sh <image>}"
 
+# Choose the container engine: the one named, else docker when its daemon answers, else podman.
 engine="${CONTAINER_ENGINE:-}"
 if [ -z "$engine" ]; then
   if command -v docker > /dev/null 2>&1 && docker info > /dev/null 2>&1; then
@@ -30,19 +31,23 @@ if [ -z "$engine" ]; then
   fi
 fi
 
+# fail <message>: report the failed check and stop with status 1 (the EXIT trap prints the container's log and removes it).
 fail() {
   echo "smoke test FAILED: $*" >&2
   exit 1
 }
 
+# The image must run as the fixed non-root user.
 user="$("$engine" image inspect --format '{{.Config.User}}' "$image")"
 [ "$user" = "65534:65534" ] || fail "image runs as '${user}', want 65534:65534"
 
+# A scratch directory for headers and bodies, and the container started the way the cluster runs it.
 work="$(mktemp -d)"
 cid="$("$engine" run -d --rm --read-only --cap-drop ALL --security-opt no-new-privileges \
   -p 127.0.0.1::8080 "$image")"
 trap '"$engine" logs "$cid" 2>&1 | tail -20; "$engine" rm -f "$cid" > /dev/null 2>&1 || true; rm -rf "$work"' EXIT
 
+# The host port Docker or Podman published for the container's 8080.
 hostport="$("$engine" port "$cid" 8080/tcp | head -n 1)"
 base="http://${hostport}"
 
@@ -60,6 +65,7 @@ require_header() {
   v="$(header "$1")"
   [[ "$v" =~ $2 ]] || fail "$3 $4: header $1 is '${v}', want match for $2"
 }
+# security_headers <method> <path>: the response must carry every security header (nosniff, framing, referrer, HSTS, permissions, the CSP with a fresh nonce) and the CSP must not allow inline scripts.
 security_headers() { # <method> <path>
   require_header X-Content-Type-Options '^nosniff$' "$1" "$2"
   require_header X-Frame-Options '^SAMEORIGIN$' "$1" "$2"
@@ -72,6 +78,7 @@ security_headers() { # <method> <path>
   [[ "$csp" != *"script-src 'self' 'unsafe-inline'"* ]] || fail "$1 $2: CSP allows inline scripts"
 }
 
+# Wait up to thirty seconds for the server.
 # Wait for the server (the in-image healthcheck mode doubles as the readiness probe).
 ready=""
 for _ in $(seq 1 30); do
@@ -83,6 +90,7 @@ for _ in $(seq 1 30); do
 done
 [ -n "$ready" ] || fail "the in-image -healthcheck never succeeded"
 
+# The shell: 200, the app's mount point, no-cache and the security headers.
 fetch GET /
 [ "$code" = 200 ] || fail "/ answered ${code}, want 200"
 grep -q '<div id="app">' "$work/body" || fail "/ is not the SPA shell"
@@ -97,19 +105,23 @@ fetch GET "$bundle"
 require_header Cache-Control 'immutable' GET "$bundle"
 security_headers GET "$bundle"
 
+# The licence notices are served.
 fetch GET /THIRD_PARTY_LICENSES
 [ "$code" = 200 ] || fail "/THIRD_PARTY_LICENSES answered ${code}, want 200"
 [ -s "$work/body" ] || fail "/THIRD_PARTY_LICENSES is empty"
 security_headers GET /THIRD_PARTY_LICENSES
 
+# An unknown route falls back to the shell (client-side routing).
 fetch GET /some/client/route
 [ "$code" = 200 ] && grep -q '<div id="app">' "$work/body" || fail "an unknown route answered ${code}, want the SPA shell (200)"
 
+# A missing asset is a 404 with no cache header (so a stale name is never cached).
 fetch GET /assets/missing.abc123.js
 [ "$code" = 404 ] || fail "/assets/missing.abc123.js answered ${code}, want 404"
 [ -z "$(header Cache-Control)" ] || fail "404 under /assets/ carries Cache-Control: $(header Cache-Control)"
 security_headers GET /assets/missing.abc123.js
 
+# Dot-files are refused, and only reads are allowed.
 fetch GET /.env
 [ "$code" = 404 ] || fail "/.env answered ${code}, want 404"
 

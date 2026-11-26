@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+// Vitest, Vue Test Utils and the root component under test.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import App from '../src/App.vue'
@@ -11,13 +12,16 @@ const SNAPSHOT = {
   groups: [{ name: 'Group A', status: 'degraded', components: [{ name: 'Service one', status: 'down' }] }],
 }
 
+// The mounted component, unmounted after each test; and the stand-in for fetch, which each test points at a response.
 let wrapper: VueWrapper | undefined
 const respond = vi.fn<() => Response>()
 
+// Replace fetch with the stand-in and silence the expected console warning.
 beforeEach(() => {
   vi.stubGlobal('fetch', async () => respond())
   vi.spyOn(console, 'warn').mockImplementation(() => undefined)
 })
+// Unmount and restore everything, so one test never sees another's state.
 afterEach(() => {
   wrapper?.unmount()
   wrapper = undefined
@@ -26,14 +30,17 @@ afterEach(() => {
   respond.mockReset()
 })
 
+/** Mount the app and wait for the first poll to settle. */
 async function open() {
   wrapper = mount(App, { attachTo: document.body })
   await flushPromises()
   return wrapper
 }
 
+// json(body): a 200 JSON response, as the status service sends.
 const json = (body: unknown) => new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } })
 
+// What the page says in each state, in words a visitor reads.
 describe('the page', () => {
   it('renders the snapshot as a heading, a status headline and a list of components per group', async () => {
     respond.mockReturnValue(json(SNAPSHOT))
@@ -71,6 +78,7 @@ describe('the page', () => {
   })
 })
 
+// The shared shell: a single visible heading, the footer note after the copyright line, no links to tool pages that do not exist.
 describe('the shell', () => {
   it('is the shared tool shell: one visible heading, the note after the copyright line, and no links to tool pages that do not exist', async () => {
     respond.mockReturnValue(json(SNAPSHOT))
@@ -87,6 +95,7 @@ describe('the shell', () => {
   })
 })
 
+// A failed poll never shows the technical cause on the page and never claims everything is operational.
 describe('a failed poll', () => {
   it('with nothing to show is an error that says what happens next, without the technical cause', async () => {
     respond.mockReturnValue(new Response('down', { status: 503 }))
